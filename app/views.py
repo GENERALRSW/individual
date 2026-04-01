@@ -5,8 +5,12 @@ Werkzeug Documentation:  https://werkzeug.palletsprojects.com/
 This file contains the routes for your application.
 """
 
-from app import app
-from flask import render_template, request, redirect, url_for
+import os
+from app import app, db
+from flask import render_template, request, redirect, url_for, flash
+from werkzeug.utils import secure_filename
+from app.forms import PropertyForm
+from app.models import Property
 
 
 ###
@@ -23,6 +27,54 @@ def home():
 def about():
     """Render the website's about page."""
     return render_template('about.html', name="Mary Jane")
+
+
+@app.route('/properties/create', methods=['GET', 'POST'])
+def property_create():
+    """Display the form to add a new property and handle form submission."""
+    form = PropertyForm()
+
+    if form.validate_on_submit():
+        # Save uploaded photo
+        photo_file = form.photo.data
+        filename = secure_filename(photo_file.filename)
+        upload_folder = app.config['UPLOAD_FOLDER']
+        os.makedirs(upload_folder, exist_ok=True)
+        photo_file.save(os.path.join(upload_folder, filename))
+
+        # Save property to database
+        new_property = Property(
+            title=form.title.data,
+            description=form.description.data,
+            no_of_rooms=form.no_of_rooms.data,
+            no_of_bathrooms=form.no_of_bathrooms.data,
+            price=form.price.data,
+            property_type=form.property_type.data,
+            location=form.location.data,
+            photo=filename
+        )
+        db.session.add(new_property)
+        db.session.commit()
+
+        flash('Property successfully added!', 'success')
+        return redirect(url_for('properties'))
+
+    flash_errors(form)
+    return render_template('property_create.html', form=form)
+
+
+@app.route('/properties')
+def properties():
+    """Display a list of all properties."""
+    all_properties = Property.query.all()
+    return render_template('properties.html', properties=all_properties)
+
+
+@app.route('/properties/<int:propertyid>')
+def property_view(propertyid):
+    """View an individual property by its ID."""
+    prop = db.get_or_404(Property, propertyid)
+    return render_template('property.html', property=prop)
 
 
 ###

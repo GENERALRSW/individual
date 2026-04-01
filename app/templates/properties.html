@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="mt-4">
+  <h2 class="fw-bold mb-4">Properties</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if properties %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      {% for prop in properties %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <img src="{{ url_for('static', filename='uploads/' + prop.photo) }}" class="card-img-top" alt="{{ prop.title }}" style="height: 200px; object-fit: cover;">
+          <div class="card-body">
+            <h5 class="card-title">{{ prop.title }}</h5>
+            <p class="card-text text-muted mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
+                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+              </svg>
+              {{ prop.location }}
+            </p>
+            <span class="badge" style="background-color: #0dcaf0; font-size: 0.85rem;">${{ prop.price }}</span>
+          </div>
+          <div class="card-footer p-0">
+            <a href="{{ url_for('property_view', propertyid=prop.id) }}" class="btn w-100 text-white fw-semibold" style="background-color: #20c997; border-radius: 0;">View Property</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No properties have been added yet. <a href="{{ url_for('property_create') }}">Add one now.</a></p>
+  {% endif %}
+</div>
+{% endblock %}
