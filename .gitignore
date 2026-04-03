@@ -24,3 +24,5 @@ node_modules
 
 .env
 .flaskenv
+.claude
+.claude/
